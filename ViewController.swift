@@ -30,7 +30,7 @@ class ViewController: UIViewController {
         setupGameElements()
         resetBall()
         
-        // Запуск игрового цикла (60 FPS)
+        // Запуск игрового цикла (60 FPS) с правильным синтаксисом селектора для Swift 1.2/2.0
         gameTimer = CADisplayLink(target: self, selector: Selector("updateGame"))
         gameTimer.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
     }
@@ -81,7 +81,7 @@ class ViewController: UIViewController {
         
         ball.center = CGPoint(x: viewWidth / 2, y: viewHeight / 2)
         
-        // Случайное направление при старте
+        // Случайное направление при старте (совместимо со старым Swift)
         ballVelocityX = arc4random_uniform(2) == 0 ? 4.0 : -4.0
         ballVelocityY = arc4random_uniform(2) == 0 ? 4.0 : -4.0
     }
@@ -99,10 +99,9 @@ class ViewController: UIViewController {
             ballVelocityX = -ballVelocityX
         }
         
-        // Простая логика ИИ для верхней ракетки
-        // Компьютер плавно двигается за мячом
+        // Логика ИИ для верхней ракетки
         let targetX = ball.center.x - computerPaddle.frame.size.width / 2
-        let speed: CGFloat = 3.5 // Скорость реакции ИИ
+        let speed: CGFloat = 3.5 
         if computerPaddle.frame.origin.x < targetX {
             computerPaddle.frame.origin.x += speed
         } else if computerPaddle.frame.origin.x > targetX {
@@ -111,10 +110,8 @@ class ViewController: UIViewController {
         
         // Проверка столкновения с ракеткой игрока
         if CGRectIntersectsRect(ball.frame, playerPaddle.frame) {
-            // Проверяем, что мяч летит вниз, чтобы избежать залипания
             if ballVelocityY > 0 {
                 ballVelocityY = -ballVelocityY
-                // Немного закручиваем мяч в зависимости от места удара
                 let hitPoint = ball.center.x - playerPaddle.center.x
                 ballVelocityX = hitPoint * 0.1
             }
@@ -144,7 +141,7 @@ class ViewController: UIViewController {
         }
     }
     
-    // Управление игроком с помощью тачей/свайпов
+    // Управление игроком (совместимо с iOS 7 с использованием NSObject/UITouch)
     override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
         handleTouches(touches)
     }
@@ -158,7 +155,6 @@ class ViewController: UIViewController {
             let touchLocation = touch.locationInView(self.view)
             let viewWidth = self.view.bounds.width
             
-            // Ограничиваем движение ракетки пределами экрана
             var newX = touchLocation.x - playerPaddle.frame.size.width / 2
             if newX < 0 { newX = 0 }
             if newX > viewWidth - playerPaddle.frame.size.width { newX = viewWidth - playerPaddle.frame.size.width }
@@ -167,7 +163,7 @@ class ViewController: UIViewController {
         }
     }
     
-    // Блокируем поворот экрана для iOS 7
+    // Блокируем поворот экрана
     override func shouldAutorotate() -> Bool {
         return false
     }
@@ -176,3 +172,18 @@ class ViewController: UIViewController {
         return Int(UIInterfaceOrientationMask.Portrait.rawValue)
     }
 }
+
+// Позволяет приложению запускаться без Storyboard и xib файлов напрямую из кода
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    var window: UIWindow?
+
+    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+        window = UIWindow(frame: UIScreen.mainScreen().bounds)
+        window?.rootViewController = ViewController()
+        window?.makeKeyAndVisible()
+        return true
+    }
+}
+
+// Главная точка входа в приложение
+UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, nil, NSStringFromClass(AppDelegate.self))
